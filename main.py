@@ -33,11 +33,14 @@ def _create_app(config: Config) -> tuple[Bot, Dispatcher, FastAPI]:
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
         webhook_url = f"{config.webhook_base_url}{config.webhook_path}"
-        try:
-            await bot.set_webhook(webhook_url)
-            logger.info("Webhook set: %s", webhook_url)
-        except Exception as e:
-            logger.exception("Failed to set webhook: %s", e)
+        if not webhook_url.startswith("https://"):
+            logger.error("Webhook URL must use HTTPS: %s", webhook_url)
+        else:
+            try:
+                await bot.set_webhook(webhook_url)
+                logger.info("Webhook set: %s", webhook_url)
+            except Exception as e:
+                logger.exception("Failed to set webhook: %s", e)
         yield
         try:
             await bot.delete_webhook()
