@@ -1,6 +1,5 @@
 """FastAPI app with webhook for Telegram bot."""
 
-import asyncio
 import logging
 import sys
 from contextlib import asynccontextmanager
@@ -34,15 +33,11 @@ def _create_app(config: Config) -> tuple[Bot, Dispatcher, FastAPI]:
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
         webhook_url = f"{config.webhook_base_url}{config.webhook_path}"
-
-        async def set_webhook_task():
-            try:
-                await bot.set_webhook(webhook_url)
-                logger.info("Webhook set: %s", webhook_url)
-            except Exception as e:
-                logger.exception("Failed to set webhook: %s", e)
-
-        asyncio.create_task(set_webhook_task())
+        try:
+            await bot.set_webhook(webhook_url)
+            logger.info("Webhook set: %s", webhook_url)
+        except Exception as e:
+            logger.exception("Failed to set webhook: %s", e)
         yield
         try:
             await bot.delete_webhook()
@@ -51,10 +46,16 @@ def _create_app(config: Config) -> tuple[Bot, Dispatcher, FastAPI]:
 
     app = FastAPI(lifespan=lifespan)
 
+    @app.get(config.webhook_path)
+    async def webhook_health():
+        """Check that webhook path exists (GET for browser test)."""
+        return {"ok": True, "webhook": "ready"}
+
     @app.post(config.webhook_path)
     async def webhook(request: Request):
         try:
             data = await request.json()
+            logger.info("Webhook received update: %s", data.get("update_id"))
             update = Update.model_validate(data)
             await dp.feed_webhook_update(bot, update)
         except Exception as e:
