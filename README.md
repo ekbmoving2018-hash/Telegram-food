@@ -51,29 +51,30 @@ Telegram -> webhook -> FastAPI -> aiogram -> OpenAI API -> ответ в Telegra
 
 ## Деплой на Railway
 
-1. Зарегистрируйтесь на [railway.com](https://railway.com) и создайте проект.
+В проекте есть `railway.json` — конфигурация для Railway (Dockerfile, healthcheck, restart policy).
 
-2. Подключите GitHub-репозиторий или загрузите код через Railway CLI.
+### Пошаговая настройка
 
-3. Добавьте переменные окружения:
-   | Переменная | Описание |
+1. **Создайте проект** на [railway.com](https://railway.com) (New Project → Deploy from GitHub repo).
+
+2. **Подключите репозиторий** `ekbmoving2018-hash/Telegram-food`. Railway сам обнаружит Dockerfile.
+
+3. **Добавьте публичный домен**: Service → Settings → Networking → Generate Domain.
+
+4. **Задайте переменные окружения** (Service → Variables):
+
+   | Переменная | Значение |
    |------------|----------|
-   | `TELEGRAM_BOT_TOKEN` | Токен бота от @BotFather |
-   | `OPENAI_API_KEY` | API-ключ OpenAI |
-   | `OPENAI_MODEL` | Модель (по умолчанию: gpt-4.1) |
-   | `WEBHOOK_BASE_URL` | URL приложения: `https://${{RAILWAY_PUBLIC_DOMAIN}}` |
-   | `WEBHOOK_PATH` | Путь webhook (по умолчанию: /webhook) |
+   | `TELEGRAM_BOT_TOKEN` | Токен от @BotFather |
+   | `OPENAI_API_KEY` | Ваш API-ключ OpenAI |
+   | `WEBHOOK_BASE_URL` | `https://${{RAILWAY_PUBLIC_DOMAIN}}` |
+   | `OPENAI_MODEL` | `gpt-4.1` (опционально) |
 
-4. Railway задаёт `PORT` и `RAILWAY_PUBLIC_DOMAIN` автоматически.  
-   Для `WEBHOOK_BASE_URL` можно использовать:  
-   `https://<ваш-сервис>.railway.app`
+   Railway автоматически подставляет `RAILWAY_PUBLIC_DOMAIN` (например, `xxx.up.railway.app`).
 
-5. Выберите способ деплоя: **Dockerfile** (в проекте уже есть Dockerfile).
+5. **Деплой**: при пуше в main Railway автоматически пересоберёт и задеплоит приложение.
 
-6. После деплоя Railway выдаст публичный URL. Укажите его в `WEBHOOK_BASE_URL` и при необходимости перезапустите сервис.
-
-7. Бот будет принимать обновления по адресу:  
-   `https://<ваш-url>/webhook`
+6. Webhook Telegram: `https://<ваш-домен>/webhook`
 
 ## Переменные окружения
 
