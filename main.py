@@ -1,5 +1,6 @@
 """FastAPI app with webhook for Telegram bot."""
 
+import asyncio
 import logging
 import sys
 from contextlib import asynccontextmanager
@@ -33,10 +34,20 @@ def _create_app(config: Config) -> tuple[Bot, Dispatcher, FastAPI]:
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
         webhook_url = f"{config.webhook_base_url}{config.webhook_path}"
-        await bot.set_webhook(webhook_url)
-        logger.info("Webhook set: %s", webhook_url)
+
+        async def set_webhook_task():
+            try:
+                await bot.set_webhook(webhook_url)
+                logger.info("Webhook set: %s", webhook_url)
+            except Exception as e:
+                logger.exception("Failed to set webhook: %s", e)
+
+        asyncio.create_task(set_webhook_task())
         yield
-        await bot.delete_webhook()
+        try:
+            await bot.delete_webhook()
+        except Exception as e:
+            logger.warning("Failed to delete webhook: %s", e)
 
     app = FastAPI(lifespan=lifespan)
 
