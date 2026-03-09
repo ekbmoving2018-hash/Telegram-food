@@ -21,13 +21,17 @@ class Config:
         token = getenv("TELEGRAM_BOT_TOKEN")
         api_key = getenv("OPENAI_API_KEY")
         webhook_url = getenv("WEBHOOK_BASE_URL")
+        if not webhook_url:
+            railway_domain = getenv("RAILWAY_PUBLIC_DOMAIN")
+            if railway_domain:
+                webhook_url = f"https://{railway_domain}"
+            else:
+                raise ValueError("WEBHOOK_BASE_URL or RAILWAY_PUBLIC_DOMAIN is required")
 
         if not token:
             raise ValueError("TELEGRAM_BOT_TOKEN is required")
         if not api_key:
             raise ValueError("OPENAI_API_KEY is required")
-        if not webhook_url:
-            raise ValueError("WEBHOOK_BASE_URL is required")
 
         return cls(
             telegram_bot_token=token,
