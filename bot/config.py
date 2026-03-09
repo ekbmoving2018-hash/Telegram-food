@@ -58,7 +58,7 @@ class Config:
         return cls(
             telegram_bot_token=token,
             openai_api_key=api_key,
-            openai_model=getenv("OPENAI_MODEL", "gpt-4.1"),
+            openai_model=getenv("OPENAI_MODEL", "gpt-4o-mini"),
             webhook_base_url=webhook_base,
             webhook_path=webhook_path,
             port=int(getenv("PORT", "8000")),
